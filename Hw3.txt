@@ -1,0 +1,25 @@
+#Lab3
+#Операционные системы #2
+#Task1 - в соответствии с указанными ниже инструкциями,произведите настройку сети системы,а также протокола SSH
+Настройка сети в Ubuntu Server 24.04
+
+#Будем настраивать статическую адресацию, так удобнее, чтобы не искать на работе DHCP и не прокидывать его в тестовую среду vSphere.
+#Выведем версию ОС
+user@lab4:~$ lsb_release -a
+Distributor ID: Ubuntu
+Description:    Ubuntu 24.04.1 LTS
+Release:		24.04
+Codename:		noble
+
+#Проверим сетевые интерфейсы и содержимое /etc/netplan
+user@lab4:~$ ls -l /etc/netplan
+-rw------- 1 root root 354 Jun 9 06:47 50-cloud-init.yaml
+
+user@lab4:~$ ip -o a
+1: lo inet 127.0.01/8 scope host lo\ valid_lft forever preferred_lft forever #Пока сетевого интерфейа нет
+
+#Настроиваем статическую адресацию
+user@lab4:~$ vim /etc/netplan/50-cloud-init.yaml
+
+network:
+	ethernets:
