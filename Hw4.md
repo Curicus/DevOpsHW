@@ -70,3 +70,62 @@ MongoServerError[Unauthorized]: not authorized on Database to execute command { 
 Database>
 ```
 >Получили ошибку.
+
+## Task 3 Bash script №1
+Содержание скрипта: замена существующего расширения в имени файла на заданное. Исходное имя файла и новое расширение передаются скрипту в
+качестве параметров. Основное средство: нестандартное раскрытие переменных. Усложнение: предусмотреть штатную реакцию на отсутствие
+расширения в исходном имени файла.
+### Содержание скрипта
+```
+#! /usr/bin/env bash
+
+filename="$1"
+extention="$2"
+
+#проверка на существование файла
+if [ ! -e "$filename" ]; then
+    echo "File $filename does not exist"
+    exit 1
+fi
+
+#проверка наличия расширения в файле
+name="${filename%.*}"
+
+if [ "$filename" != "$name" ]; then
+    echo "Filename without extension: "$name""
+else
+    echo " $filename has no extension"
+    exit 0
+fi
+
+new_filename="${name}.${extention}"
+mv "$filename" "$new_filename"
+echo "Old filename: "$filename"  New filename: "$new_filename" "
+```
+###  Результаты исполнения
+>вводная информация
+```
+user@lab4:~/bash$ ls -l
+total 4
+-rw-rw-r-- 1 user user   0 Jun 13 09:26 filefortest
+-rw-rw-r-- 1 user user   0 Jun 13 08:40 filefortest.gz
+-rwxrw-r-- 1 user user 553 Jun 13 09:06 script.sh
+```
+> Проверка на отсутствие файла
+```
+user@lab4:~/bash$ sudo ./script.sh file.gz ppt
+File file.gz does not exist
+```
+> Проверка на отсутствие расширения
+```
+user@lab4:~/bash$ sudo ./script.sh filefortest ppt
+ filefortest has no extension
+```
+> Полная работа
+```
+user@lab4:~/bash$ sudo ./script.sh filefortest.gz ppt
+Filename without extension: filefortest
+Old filename: filefortest.gz  New filename: filefortest.ppt
+```
+
+## Task4 Bash script №2
