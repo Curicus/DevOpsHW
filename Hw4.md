@@ -129,3 +129,81 @@ Old filename: filefortest.gz  New filename: filefortest.ppt
 ```
 
 ## Task4 Bash script №2
+### Содержание скрипта
+```
+#! /usr/bin/env bash
+
+filename="$1"
+start="$2"
+end="$3"
+action="$4"
+
+# проверка на существование файла
+if [ ! -e "$filename" ]; then
+    echo "File $filename does not exist"
+    exit 1
+fi
+
+# start и end должны быть числами
+
+if ! [[ "$start" =~ ^[0-9]+$ && "$end" =~ ^[0-9]+$ ]]; then
+    echo "Start and End must be integer"
+    exit 1
+fi
+
+
+file_length=${#filename} #длина имени файла
+
+# проверим дополнительные ограничения типа выхода за длину строки и чтобы начало не было дальше конца
+
+if [ "$start" -gt "$end" ]; then
+    echo " Start must be before end"
+    exit 1
+elif [ "$end" -gt "$file_length" ]; then
+    echo "End must be into $filename"
+    exit 1
+fi
+
+# произведем выделение и удаление
+
+length="$((end - start +1))"
+sdvig="$((start-1))"
+if [ "$action" = "pick" ]; then
+    echo "${filename:$sdvig:$length }"
+elif [ "$action" = "delete" ]; then
+    before="${filename:0:$sdvig}"
+    after="${filename:$end}"
+    echo "${before}${after}"
+fi
+```
+### Результаты исполнения
+> Проверка отсутствия файла
+```
+user@lab4:~/bash$ ./script1.sh Congratu 2 8 pick
+File Congratu does not exist
+```
+> Проверка того, что Start и End числа
+```
+user@lab4:~/bash$ ./script1.sh Congratulation G !  pick
+Start and End must be integer
+```
+> Проверка того, что начало перед концом
+```
+user@lab4:~/bash$ ./script1.sh Congratulation 8 2 pick
+ Start must be before end
+```
+> Проверка того, что конец вписывается в длину слова
+```
+user@lab4:~/bash$ ./script1.sh Congratulation 2 22  pick
+End must be into Congratulation
+```
+> Проверка работы выделения подстроки
+```
+user@lab4:~/bash$ ./script1.sh Congratulation 2 8  pick
+ongratu
+```
+> Проверка работы удаления подстроки
+```
+user@lab4:~/bash$ ./script1.sh Congratulation 2 8  delete
+Clation
+```
