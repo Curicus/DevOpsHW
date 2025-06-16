@@ -18,7 +18,7 @@ user@Lab5:~$ sudo crontab -e
 # For example, you can run a backup of all your user accounts
 # at 5 a.m every week with:
 # 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
-0 16 1 * * apt clean && apt autoclean        #Данная задача запустится следующий раз 1 июля в 16.00 и будет выполняться каждый месяц 1-го числа в это время
+0 16 1 * * apt clean && apt autoremove        #Данная задача запустится следующий раз 1 июля в 16.00 и будет выполняться каждый месяц 1-го числа в это время
 #
 # For more information see the manual pages of crontab(5) and cron(8)
 #
@@ -26,7 +26,7 @@ user@Lab5:~$ sudo crontab -e
 ```
 > Запустим выполнение задачи вручную
 ```
-user@Lab5:~$ sudo apt clean && sudo apt autoclean
+user@Lab5:~$ sudo apt clean && sudo apt autoremove
 Reading package lists... Done
 Building dependency tree... Done
 Reading state information... Done
