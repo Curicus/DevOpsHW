@@ -58,7 +58,11 @@ win.com
  93     assert(students[0]->id ==
 ```
 Найдите слово WORD и замените его на IGNORE.  `:%s/WORD/IGNORE/g`
+
 Найдите слово Reset и замените его на set.    `:%s/Reset/set/g`
+
 Найдите слово input и замените его на output  `:%s/input/output/g`
+
+
 
 
