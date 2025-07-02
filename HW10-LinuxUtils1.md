@@ -199,5 +199,128 @@ MAIL=/var/mail/logger
 _=/usr/bin/env
 ```
 ### Без переключения пользователя создать от имени logger директорию /tmp/logger-dir
-sudo -u logger mkdir /tmp/logger-dir
+`sudo -u logger mkdir /tmp/logger-dir`
 
+## Анализ производительности
+### Определите текущую load average
+![image](https://github.com/user-attachments/assets/f543bf8e-9b59-4438-8a4b-fb8ddc2e7900)
+
+### Запустить стресс-тест с помощью утилиты stress-ng:
+Тут у меня чета все зависло.
+
+### Запустить dd if=/dev/zero of=/tmp/testfile bs=1M count=500 и параллельно с помощью iostat найти устройство с максимальной нагрузкой
+
+- %util диска
+- await (среднее время ожидания)
+```
+user@Lab5:~$ dd if=/dev/zero of=/tmp/testfile bs=1M count=500
+user@Lab5:~$ iostat -dx 1
+```
+![image](https://github.com/user-attachments/assets/6971dc22-72dc-4001-814e-81ef4ea38f95)
+С максимальной нагрузкой оказался логический том dm-0 (100%), ну и физический sda не далеко от нео ушел(70%)
+
+Параметр w_wait  в приделах 30-40, это говорит о присутствующей нагрузке надисковую систему.
+
+### Самостоятельно изучить такие утилиты как atop и sar; сгенерировать нагрузку с помощью stress-ng и dd и проанализировать постфактум с помощью atop и sar (то есть условно 5 минут понагружали, сняли нагрузку и анализируем что там было)
+
+Запустили stress-ng потом запустили `sudo atop -r /var/log/atop/atop_20250702`
+![image](https://github.com/user-attachments/assets/aa5b199a-37f1-4fff-b6d3-62fe1068d877)
+
+Тут конкретно видно, что CPU загружен процессами stress-ng-cpu от пользвоателя User 
+
+### Запустить openssl speed -seconds 30 2>& 1 > /dev/null & и с помощью pidstat найти
+
+- PID процесса openssl
+- % пользовательского (usr) и системного (sys) CPU time
+![image](https://github.com/user-attachments/assets/d76a6037-fa15-48d0-baa7-16d145751490)
+
+### Запустить sleep 5; ls -R /usr и после ее завершения найти
+
+- время выполнения (real, user, sys)
+- максимальное потребление памяти
+
+Выполним это с помощью команды `/usr/bin/time -v sh -c "sleep 5; ls -R /usr"`
+```
+Python.asdl
+        Command being timed: "sh -c sleep 5; ls -R /usr"
+        User time (seconds): 0.66
+        System time (seconds): 2.11
+        Percent of CPU this job got: 31%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 0:08.76
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 4700
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 909
+        Voluntary context switches: 11
+        Involuntary context switches: 66033
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 0
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+
+```
+Откуда видим real time = 8.76 (Это с учетом задержки в 5 сек), user time = 0.66, system time = 2.11
+Поле вывода Maximum resident set size (kbytes): 4700 означает Максимальное потребление памяти и равно оно 4700 KB.
+
+### Запустить стресс-тест с помощью утилиты stress-ng (параметры подобрать самостоятельно) и вывести с помощью ps топ-5 процессов (по очереди) с наибольшим потреблением
+
+- CPU
+- DISK
+- MEM
+  
+>Посмотрим по CPU
+```
+stress-ng --cpu 2 --timeout 600
+user@Lab5:~$ ps -eo pid,comm,%cpu --sort=-%cpu | head -n 6
+    PID COMMAND         %CPU
+   3672 stress-ng-cpu    100
+   3673 stress-ng-cpu    100
+    311 kworker/3:2-eve  1.1
+   2801 sshd             0.7
+    103 kworker/2:1-eve  0.7
+```
+>Посмотрим по DISK
+```
+
+user@Lab5:~$ dd if=/dev/zero of=/tmp/testfile bs=1M count=500
+user@Lab5:~$ sudo iotop -o -b -n 5 | head -n 20
+Total DISK READ:         0.00 B/s | Total DISK WRITE:         0.00 B/s
+Current DISK READ:       0.00 B/s | Current DISK WRITE:       0.00 B/s
+    TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+Total DISK READ:         0.00 B/s | Total DISK WRITE:         0.00 B/s
+Current DISK READ:       0.00 B/s | Current DISK WRITE:       0.00 B/s
+    TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+Total DISK READ:         0.00 B/s | Total DISK WRITE:         0.00 B/s
+Current DISK READ:       0.00 B/s | Current DISK WRITE:       0.00 B/s
+    TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+Total DISK READ:         0.00 B/s | Total DISK WRITE:         0.00 B/s
+Current DISK READ:       0.00 B/s | Current DISK WRITE:      34.83 K/s
+    TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+Total DISK READ:         0.00 B/s | Total DISK WRITE:        31.00 K/s
+Current DISK READ:       0.00 B/s | Current DISK WRITE:      38.75 K/s
+    TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN      IO    COMMAND
+    400 be/3 root        0.00 B/s   31.00 K/s ?unavailable?  [jbd2/dm-0-8]
+```
+>Честно говоря информативности мало, вроде и что-то пишет, а что именно и куда не понятно.
+
+>Посмотрим по MEM
+
+```
+stress-ng --vm 2 --vm-bytes 2G --timeout 300 &
+user@Lab5:~$ ps aux --sort=-%mem | head -n 6
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+user        4588  100 17.4 1326340 1058748 pts/0 R    10:06   0:12 stress-ng-vm [run]
+user        4589  100 17.4 1326340 1058748 pts/0 R    10:06   0:12 stress-ng-vm [run]
+user        4585  1.7  1.4 277760 88320 pts/0    SL   10:06   0:00 stress-ng --vm 2 --vm-bytes 2G --timeout 300
+user         938  0.0  0.7 609644 46132 ?        Ssl  09:25   0:00 /usr/bin/node /home/user/HW5/nodejs
+root         505  0.0  0.4 354632 27264 ?        SLsl 09:25   0:00 /sbin/multipathd -d -s
+```
+> Тут четков видно что 3 топовых процесса по загрузке памяти это стресстест.
