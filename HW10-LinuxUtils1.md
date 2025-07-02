@@ -289,7 +289,6 @@ user@Lab5:~$ ps -eo pid,comm,%cpu --sort=-%cpu | head -n 6
 ```
 >Посмотрим по DISK
 ```
-
 user@Lab5:~$ dd if=/dev/zero of=/tmp/testfile bs=1M count=500
 user@Lab5:~$ sudo iotop -o -b -n 5 | head -n 20
 Total DISK READ:         0.00 B/s | Total DISK WRITE:         0.00 B/s
@@ -323,4 +322,4 @@ user        4585  1.7  1.4 277760 88320 pts/0    SL   10:06   0:00 stress-ng --v
 user         938  0.0  0.7 609644 46132 ?        Ssl  09:25   0:00 /usr/bin/node /home/user/HW5/nodejs
 root         505  0.0  0.4 354632 27264 ?        SLsl 09:25   0:00 /sbin/multipathd -d -s
 ```
-> Тут четков видно что 3 топовых процесса по загрузке памяти это стресстест.
+> Тут четко видно, что 3 топовых процесса по загрузке памяти это стресстест.
