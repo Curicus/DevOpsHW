@@ -151,4 +151,50 @@ user@Lab5:~$ sudo mkfs.ext4 /dev/vg_raid/app1
 user@Lab5:~$ sudo mkdir -p /opt/data-app1
 user@Lab5:~$ sudo mount /dev/vg_raid/app1 /opt/data-app1
 ```
+### 9. Сымитировать сбой одного из дисков в raid массиве; проверить, что данные не побились из-за этого; удалить сбойный диск из массива; вернуть обратно
+> Выведем из строя диск sdb `user@Lab5:~$ sudo mdadm /dev/md0 --fail /dev/sdb`
+> Чекнем
+```
+user@Lab5:~$ cat /proc/mdstat
+Personalities : [raid0] [raid1] [raid6] [raid5] [raid4] [raid10]
+md0 : active raid1 sdc[1] sdb[0](F)
+      5237760 blocks super 1.2 [2/1] [_U]
+```
+> Видим возле sdb (F) ознаает что диск failed
+> Проверим, что RAID работает - создадим файл на volume который лежит на RAID
+```
+user@Lab5:~$ sudo vim /opt/data-app1/test
+user@Lab5:~$ sudo cat /opt/data-app1/test
+Hello!
+```
+> Удалим и вернем сбойный диск
+```
+user@Lab5:~$ sudo mdadm --remove /dev/md0 /dev/sdb
+mdadm: hot removed /dev/sdb from /dev/md0
+user@Lab5:~$ sudo mdadm --add /dev/md0 /dev/sdb
+mdadm: added /dev/sdb
+```
+После чего пошел RAID rebuild.
+
+### 20. Попробовать удалить диск из raid-массива без метки --fail. Что произошло (или могло бы произойти)?
+```
+user@Lab5:~$ sudo mdadm --remove /dev/md0 /dev/sdb
+mdadm: hot remove failed for /dev/sdb: Device or resource busy
+```
+> Думаю это защитная функция, которая не дает исключения диска из RAID без его явного выхоода из строя, в нашем случае мы потерям резервную копию данных.
+
+## Task 2 Работа с пользователями и правами доступа
+
+### 1. Добавить в систему пользователей vmadmin и vmuser; группу ssh-users
+```
+user@Lab5:~$ sudo adduser vmadmin
+user@Lab5:~$ sudo adduser vmuser
+user@Lab5:~$ sudo addgroup ssh-users
+user@Lab5:~$ sudo usermod -aG ssh-users vmadmin
+user@Lab5:~$ sudo usermod -aG ssh-users vmuser
+```
+### 2. Пользователь vmadmin должен иметь полные права sudo без пароля
+
+
+
 
