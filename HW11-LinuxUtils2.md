@@ -223,5 +223,8 @@ account required pam_time.so
 @ssh-users       hard    maxlogins       2
 # End of file
 ```
+Проверим подключение ssh для пользователя vmadmin и видим, что на 3 подклчении 
+
+![image](https://github.com/user-attachments/assets/836e79e5-42ec-4a41-9240-77de67f38e4f)
 
 
