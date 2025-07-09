@@ -195,6 +195,33 @@ user@Lab5:~$ sudo usermod -aG ssh-users vmuser
 ```
 ### 2. Пользователь vmadmin должен иметь полные права sudo без пароля
 
+> ДЛя этого добавим в sudo visudo `vmadmin ALL=(ALL) NOPASSWD:ALL`
 
+### 3. Пользователь vmuser должен иметь возможность запускать от имени root только команды
+
+apt list --installed
+top/htop
+strace
+
+> Аналогично добавим в visudo строчку
+
+`vmuser ALL=(ALL) NOPASSWD:/usr/bin/apt list --installed, /usr/bin/top, /usr/bin/htop, /usr/bin/strace`
+
+### 4. Для всех пользователей из группы ssh-users должен быть запрещен вход по ssh в систему по выходным (суббота и воскресенье)
+
+Добавим в  /etc/security/time.conf запись sshd;*;ssh-users;Wk0600-2400
+> Внесем в SSH требование времени 
+
+sudo vim /etc/pam.d/sshd
+account required pam_time.so
+
+### 5. Всем пользователям из группы ssh-users ограничить количество одновременных подключений 2
+
+> Добавим в /etc/security/limits.conf строчку
+```
+...
+@ssh-users       hard    maxlogins       2
+# End of file
+```
 
 
