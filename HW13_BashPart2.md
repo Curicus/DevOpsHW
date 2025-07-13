@@ -32,8 +32,8 @@ Words count in file input.txt= 9
 > На выходе и должно было получиться 9 слов, исходя из постановки задачи
 
 ## Task 2  Добавление приставок к файлам определенных типов
-Добавить ко всем файлам формата log timestamp в качестве названия.
-Должно получиться filename_{timestamp}.log
+**Добавить ко всем файлам формата log timestamp в качестве названия.
+Должно получиться filename_{timestamp}.log**
 > Создадим файл скрипта под именем suffix.sh со следующим кодом и сделаем его исполняемым
 ```
   1 #!/bin/bash
@@ -62,6 +62,52 @@ user@Lab5:~/skurat$ ls -la | grep log
 -rw-rw-r--  1 user user    0 Jul 13 13:32 file1_2025-07-13_13:33.log
 -rw-rw-r--  1 user user    0 Jul 13 13:32 file2_2025-07-13_13:33.log
 ``` 
-
-
+**Для всех файлов с расширением Py добавьте в конец названия хэш коммита.**
+> Предварительно сэмитировали файл ввиде хэш-файла, его имя нам понадобится для аргумента
+```
+user@Lab5:~/skurat$ ls -la | grep -v '\.'
+total 36
+-rw-rw-r--  1 user user    0 Jul 13 13:28 ecad48e50a909450da935d84894c46d681aadd51
+```
+> Создадим файл скрипта с именем hash_commit.sh с кодом, сделаем его исполнительным и запустим
+```
+  1 #!/bin/bash
+  2
+  3 if [ $# -ne 1 ]; then
+  4   echo "Need to enter hash id as Arg: $0 <commit_hash>"
+  5   exit 1
+  6 fi
+  7
+  8 commit_hash=$1
+  9
+ 10 #Проверку на правильность введенного хэша опустим
+ 11
+ 12 for file in *.py; do
+ 13  
+ 14   core="${file%.py}"
+ 15   name_suffix="${core}_${commit_hash}.py"
+ 16
+ 17   mv "$file" "$name_suffix"
+ 18   echo "$name_suffix"
+ 19 done
+```
+> Убедимся, что у нас есть файлы с расширением .py
+```
+user@Lab5:~/skurat$ ls -la | grep .py
+-rw-rw-r--  1 user user    0 Jul 13 12:57 1.py
+-rw-rw-r--  1 user user    0 Jul 13 12:57 2.py
+-rw-rw-r--  1 user user    0 Jul 13 12:57 3.py
+```
+> Запустим скрипт и посмотрим на результат
+```
+user@Lab5:~/skurat$ ./hash_commit.sh ecad48e50a909450da935d84894c46d681aadd51
+1_ecad48e50a909450da935d84894c46d681aadd51.py
+2_ecad48e50a909450da935d84894c46d681aadd51.py
+3_ecad48e50a909450da935d84894c46d681aadd51.py
+user@Lab5:~/skurat$ ls -la | grep .py
+-rw-rw-r--  1 user user    0 Jul 13 12:57 1_ecad48e50a909450da935d84894c46d681aadd51.py
+-rw-rw-r--  1 user user    0 Jul 13 12:57 2_ecad48e50a909450da935d84894c46d681aadd51.py
+-rw-rw-r--  1 user user    0 Jul 13 12:57 3_ecad48e50a909450da935d84894c46d681aadd51.py
+```
+> It works.
 
