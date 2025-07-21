@@ -36,3 +36,12 @@ server {
     }
 }
 ```
+На клиентской машине добавим запись в файл hosts - > 192.168.1.174 tms.by
+<img width="517" height="209" alt="image" src="https://github.com/user-attachments/assets/986a44ff-0b2e-43a8-947d-44f9ec27179a" />
+
+
+
+
+
+
+
