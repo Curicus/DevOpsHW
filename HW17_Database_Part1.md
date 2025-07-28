@@ -44,7 +44,8 @@ user@Lab5  /tmp  mysqldump -u user -p${DB_PASS} medcenter > /tmp/medcenter
 user@Lab5  /tmp  rclone copy /tmp/medcenter_2025-07-28.sql gdrive:backup
 ```
 > Наш дамп появился на гугл диске
-<img width="522" height="400" alt="image" src="https://github.com/user-attachments/assets/d2bf19dd-7c7e-4d7e-b8da-c91a2fc0d8eb" />
+<img width="522" height="400" alt="image" src="https://github.com/user-attachments/assets/d2bf19dd-7c7e-4d7e-b8da-c91a2fc0d8eb" />  
+
 > Удалим таблицу Orders в БД
 ```
 MariaDB [medcenter]> show tables;
@@ -68,11 +69,10 @@ MariaDB [medcenter]> show tables;
 | Groups              |
 +---------------------+
 2 rows in set (0.001 sec)
-
-MariaDB [medcenter]>
-
+```
 
 > Теперь восстановим базу из дампа
+```
  user@Lab5  /tmp  mysql -u user -p${DB_PASS} medcenter < /tmp/medcenter_2025-07-28.sql
 MariaDB [medcenter]> show tables;
 +---------------------+
@@ -83,8 +83,9 @@ MariaDB [medcenter]> show tables;
 | Orders              |
 +---------------------+
 3 rows in set (0.000 sec)
-
+```
 > Как видим таблица Order вернулась обратно
+```
 MariaDB [medcenter]> describe Orders;
 +--------------+----------+------+-----+---------+-------+
 | Field        | Type     | Null | Key | Default | Extra |
@@ -94,8 +95,9 @@ MariaDB [medcenter]> describe Orders;
 | ord_an       | int(11)  | YES  | MUL | NULL    |       |
 +--------------+----------+------+-----+---------+-------+
 3 rows in set (0.002 sec)
+```
 > структура тоже в порядке
-
+```
 MariaDB [medcenter]> select * from Orders;
 +--------+---------------------+--------+
 | ord_id | ord_datetime        | ord_an |
@@ -110,16 +112,17 @@ MariaDB [medcenter]> select * from Orders;
 |      8 | 2020-02-12 00:00:00 |      3 |
 +--------+---------------------+--------+
 8 rows in set (0.002 sec)
-
+```
 > Ну и данные на месте
 
-> Скрипт для создания бэкапа
+> Скрипт для создания бэкапа:
+```
   1 #!/bin/bash
   2 DATE=$(date +%F_%H_%M)
   3 DUMP="/tmp/db_$DATE.sql"
   4 mysqldump -u user -p${DB_PASS} medcenter > "$DUMP"
   5 rclone copy "$DUMP" gdrive:backup
-
+```
 > Добавим в `sudo crontab -e` строчку с расписанием `0 23 * * * /home/user/skurat/DB_backup.sh`
 будем снимать дамп каждый день в 23:00:00
 
