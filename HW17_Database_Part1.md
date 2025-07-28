@@ -31,4 +31,95 @@ MariaDB [medcenter]> select A.an_name, A.an_price from Analysis A JOIN Orders O 
 ```
 
 ## Task 2 
+Шаги:
+1. Создайте бэкап базы данных. Для этого используйте команду "mysqldump" для создания полного дампа базы данных. Сохраните файл дампа в безопасном месте, таком как внешнией жесткий диск или облачное хранилище.
+2.  Измените какие-либо данные в базе данных, например, добавьте новую таблицу или обновите информацию в существующей таблице.
+3.  Восстановите базу данных из бэкапа, чтобы вернуть ее в исходное состояние. Для этого используйте команду "mysql" и укажите имя базы данных и файл дампа для восстановления.
+4.  Убедитесь, что база данных была восстановлена успешно, проверив данные и таблицы в базе данных.
+5.  Создайте скрипт, который будет автоматически создавать бэкап базы данных и отправлять его на удаленный сервер для хранения. Например, вы можете использовать инструмент "cron" Для регулярного создания бэкапов и передачи их на удаленный сервер по расписанию.
+
+> Сделаем бэкап базы 
+```
+user@Lab5  /tmp  mysqldump -u user -p${DB_PASS} medcenter > /tmp/medcenter_2025_07_28.sql`
+user@Lab5  /tmp  rclone copy /tmp/medcenter_2025-07-28.sql gdrive:backup
+```
+> Наш дамп появился на гугл диске
+<img width="522" height="400" alt="image" src="https://github.com/user-attachments/assets/d2bf19dd-7c7e-4d7e-b8da-c91a2fc0d8eb" />
+> Удалим таблицу Orders в БД
+```
+MariaDB [medcenter]> show tables;
++---------------------+
+| Tables_in_medcenter |
++---------------------+
+| Analysis            |
+| Groups              |
+| Orders              |
++---------------------+
+3 rows in set (0.001 sec)
+
+MariaDB [medcenter]> drop table Orders;
+Query OK, 0 rows affected (0.003 sec)
+
+MariaDB [medcenter]> show tables;
++---------------------+
+| Tables_in_medcenter |
++---------------------+
+| Analysis            |
+| Groups              |
++---------------------+
+2 rows in set (0.001 sec)
+
+MariaDB [medcenter]>
+
+
+> Теперь восстановим базу из дампа
+ user@Lab5  /tmp  mysql -u user -p${DB_PASS} medcenter < /tmp/medcenter_2025-07-28.sql
+MariaDB [medcenter]> show tables;
++---------------------+
+| Tables_in_medcenter |
++---------------------+
+| Analysis            |
+| Groups              |
+| Orders              |
++---------------------+
+3 rows in set (0.000 sec)
+
+> Как видим таблица Order вернулась обратно
+MariaDB [medcenter]> describe Orders;
++--------------+----------+------+-----+---------+-------+
+| Field        | Type     | Null | Key | Default | Extra |
++--------------+----------+------+-----+---------+-------+
+| ord_id       | int(11)  | NO   | PRI | NULL    |       |
+| ord_datetime | datetime | NO   |     | NULL    |       |
+| ord_an       | int(11)  | YES  | MUL | NULL    |       |
++--------------+----------+------+-----+---------+-------+
+3 rows in set (0.002 sec)
+> структура тоже в порядке
+
+MariaDB [medcenter]> select * from Orders;
++--------+---------------------+--------+
+| ord_id | ord_datetime        | ord_an |
++--------+---------------------+--------+
+|      1 | 2020-02-05 10:00:00 |      1 |
+|      2 | 2020-02-06 12:00:00 |      2 |
+|      3 | 2020-02-07 14:00:00 |      3 |
+|      4 | 2020-02-08 16:00:00 |      1 |
+|      5 | 2020-02-09 18:00:00 |      4 |
+|      6 | 2020-02-10 20:00:00 |      5 |
+|      7 | 2020-02-11 22:00:00 |      2 |
+|      8 | 2020-02-12 00:00:00 |      3 |
++--------+---------------------+--------+
+8 rows in set (0.002 sec)
+
+> Ну и данные на месте
+
+> Скрипт для создания бэкапа
+  1 #!/bin/bash
+  2 DATE=$(date +%F_%H_%M)
+  3 DUMP="/tmp/db_$DATE.sql"
+  4 mysqldump -u user -p${DB_PASS} medcenter > "$DUMP"
+  5 rclone copy "$DUMP" gdrive:backup
+
+> Добавим в `sudo crontab -e` строчку с расписанием `0 23 * * * /home/user/skurat/DB_backup.sh`
+будем снимать дамп каждый день в 23:00:00
 
