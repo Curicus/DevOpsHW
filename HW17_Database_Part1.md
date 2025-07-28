@@ -126,3 +126,6 @@ MariaDB [medcenter]> select * from Orders;
 > Добавим в `sudo crontab -e` строчку с расписанием `0 23 * * * /home/user/skurat/DB_backup.sh`
 будем снимать дамп каждый день в 23:00:00
 
+> Проверим работу `скрипта user@Lab5  /tmp  ~/skurat/DB_backup.sh`
+<img width="559" height="418" alt="image" src="https://github.com/user-attachments/assets/35841354-14fc-4c74-8c72-917bcc986468" />
+> Все на месте
