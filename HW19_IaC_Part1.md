@@ -118,6 +118,140 @@ ansibleclient              : ok=3    changed=2    unreachable=0    failed=0    s
 ```
 > Проверим появился ли ключ
 ```
+appuser@ansibleclient:~$ cat .ssh/authorized_keys
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCMWFCJVq10Mz7QNu+KfV+Dsfgao8DKkxBoS2McZGfaxAaq2kph3bpGyX2bKEGrjDnxh5U1u98wIbso+V7iBW+xuTQ8zP3xAjdv0OrDZzqxWdX3FSh7F8M5bTxgSLMzGLk3Wviq7mFiLOJFfwtaLgZD4qKLhKs7PcT70iLm+cVhL/vgiBDpUX2xehZQZiSTF9BwkAqzqjhQk2BixqULrlmYTLrZQfvwcQfT77lPxZhtSOy2AgcmGVNaW9up8BilVAtGGkRmwYC5kw4A/CM8/5YXn/Qqhb9nSTEgST0+G3PmnQ8Jm4CezViQEZKXjGI6oGg2+OfAFafD/cUXsi6OLjvZXet9OvaVr3VdTam7uzWqOlD0620zMarWVJkkzBZJYd7Zqclp0WMAkcoQVKkkoZ9Z727gzqj2vCrz3YqzbKt7NRH7TK01RSMRWAJ5R1R7NvR9VZp93o2Yh7ejOIVBLXDTryD/4Pi+2NS4r4S8Qif+yTt+9Q9Na7bGDwslImADMMk= appuser@lab
+```
+## Task 5 Написать плейбук, который копирует шаблон файла mod с управляющей машины (templates/motd.j2) на удаленные узлы в /etc/motd. Использовать переменную {{ inventory_hostname }} в шаблоне, чтобы в файле motd отображалось имя хоста. Шаблон (templates/motd.j2)
+```
+Welcome to server {{ inventory_hostname }}!
+Provided by Ansible.
+```
+> Подготовим шаблон
+```
+user@lab:~/skurat/task5$ cat templates/motd.j2
+Welcome to {{ inventory_hostname }}!
+Managed by Ansible.
+```
+> Подготовим плейбук
+```
+- name: Copy MOTD template to remote hosts
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Copy /etc/motd file from template
+      template:
+        src: templates/motd.j2
+        dest: /etc/motd
+        owner: root
+        group: root
+```
+> Проверим на удаленном хосте
+```
+appuser@ansibleclient:~$ cat /etc/motd
+Welcome to ansibleclient!
+Managed by Ansible.
+```
+## Task 6 Написать плейбук, который проверит, установлен ли git на удаленных узлах и склонирует репозиторий https://gitlab.com/devops201206/it-mtb-blog в директорию /var/www/simple-blog
+> Сделаем плейбук check_copy_git.yml
+```
+user@lab:~/skurat/task6$ cat check_copy_git.yml
+- name: Check and Copy git repo
+  hosts: all
+
+    tasks:
+      - name: Check on exists git module
+        package:
+          name: git
+          state: present
+
+      - name: Copy git repo
+        git:
+          repo: https://gitlab.com/devops201206/it-mtb-blog.git
+          dest: /var/www/simple-blog
+```
+> Проверим есть ли  у нас git на клиентской машине
+```
+user@ansibleclient:/home/appuser$ whereis git
+git: /usr/share/man/man1/git.1.gz
+``` 
+> Запустим прокатку
+```
+user@lab:~/skurat/task6$ ansible-playbook -i hosts.txt check_copy_git.yml
+
+PLAY [Check and Copy git repo] ************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ********************************************************************************************************************************************************************************
+Enter passphrase for key '/home/user/.ssh/id_rsa':
+[WARNING]: Platform linux on host ansibleclient is using the discovered Python interpreter at /usr/bin/python3.10, but future installation of another Python interpreter could change the meaning of
+that path. See https://docs.ansible.com/ansible-core/2.17/reference_appendices/interpreter_discovery.html for more information.
+ok: [ansibleclient]
+
+TASK [Check on exists git module] *********************************************************************************************************************************************************************
+changed: [ansibleclient]
+
+TASK [Copy git repo] **********************************************************************************************************************************************************************************
+changed: [ansibleclient]
+
+PLAY RECAP ********************************************************************************************************************************************************************************************
+ansibleclient              : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0\
+```
+
+> Проверим теперь на клиентской машине
+```
+user@ansibleclient:/home/appuser$ whereis git
+git: /usr/bin/git /usr/share/man/man1/git.1.gz
+user@ansibleclient:/home/appuser$ sudo ls -la /var/www/simple-blog/
+total 128
+drwxr-xr-x 3 root root  4096 Aug  6 08:26 .
+drwxr-xr-x 5 root root  4096 Aug  6 08:26 ..
+-rw-r--r-- 1 root root 97403 Aug  6 08:26 avatar.jpg
+-rw-r--r-- 1 root root   988 Aug  6 08:26 bike.html
+drwxr-xr-x 8 root root  4096 Aug  6 08:26 .git
+-rw-r--r-- 1 root root   744 Aug  6 08:26 index.html
+-rw-r--r-- 1 root root   853 Aug  6 08:26 it.html
+-rw-r--r-- 1 root root    42 Aug  6 08:26 README.md
+-rw-r--r-- 1 root root   969 Aug  6 08:26 style.css
+```
+
+## Task 7 Написать плейбук для сбора системной информации об управляемых узлах  
+
+размер оперативной памяти
+размер диска, смонтированного в /
+версия ОС
+
+> Создадим плейбук system_info.yml
+
+
+
+
+> Запустим прокатку
+```
+user@lab:~/skurat/task7$ ansible-playbook -i hosts.txt system_info.yml
+PLAY [Gathering Host System Info] *********************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ********************************************************************************************************************************************************************************
+Enter passphrase for key '/home/user/.ssh/id_rsa':
+[WARNING]: Platform linux on host ansibleclient is using the discovered Python interpreter at /usr/bin/python3.10, but future installation of another Python interpreter could change the meaning of
+that path. See https://docs.ansible.com/ansible-core/2.17/reference_appendices/interpreter_discovery.html for more information.
+ok: [ansibleclient]
+
+TASK [Total RAM] **************************************************************************************************************************************************************************************
+ok: [ansibleclient] => {
+    "msg": "RAM: 5545 Mb"
+}
+
+TASK [Disk Size mounted /] ****************************************************************************************************************************************************************************
+ok: [ansibleclient] => {
+    "msg": "Root Disk Size: 9979 Mb"
+}
+
+TASK [OS version] *************************************************************************************************************************************************************************************
+ok: [ansibleclient] => {
+    "msg": " Os: Ubuntu 22.04"
+}
+
+PLAY RECAP ********************************************************************************************************************************************************************************************
+ansibleclient              : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
 ```
 
