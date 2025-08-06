@@ -216,14 +216,31 @@ drwxr-xr-x 8 root root  4096 Aug  6 08:26 .git
 
 ## Task 7 Написать плейбук для сбора системной информации об управляемых узлах  
 
-размер оперативной памяти
-размер диска, смонтированного в /
+размер оперативной памяти  
+размер диска, смонтированного в /  
 версия ОС
 
 > Создадим плейбук system_info.yml
+```
+user@lab:~/skurat/task7$ cat system_info.yml
+- name: Gathering Host System Info
+  hosts: all
+  gather_facts: true
+
+  tasks:
+    - name: Total RAM
+      debug:
+        msg: "RAM: {{ ansible_facts.memtotal_mb }} Mb"
+
+    - name: Disk Size mounted /
+      debug:
+        msg: "Root Disk Size: {{ ansible_facts.mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_total') | first | int // 1024 // 1024 }} Mb"
 
 
-
+    - name: OS version
+      debug:
+        msg: " Os: {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}"
+```
 
 > Запустим прокатку
 ```
