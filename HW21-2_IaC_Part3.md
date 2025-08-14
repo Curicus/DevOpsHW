@@ -110,3 +110,90 @@ api_user: ecom
 APP_TOKEN={{ api_token }}  
 API_USER={{ api_user }}  
 ENVIRONMENT=production  
+
+> Создадим раздел с переменными и зашифруем их паролем
+```
+user@lab:~/skurat$ mkdir vars
+user@lab:~/skurat/vars$ vim vault_vars.yml
+api_token: "s3cr3t_t0k3n"
+api_user: ecom
+user@lab:~/skurat$ ansible-vault encrypt vars/vault_vars.yml
+user@lab:~/skurat$ cat vars/vault_vars.yml
+$ANSIBLE_VAULT;1.1;AES256
+31303332393234653031313535393139663864343131393634633439666631386438653165363565
+6136663934613036613834353832633637636565323839620a383164376237643733373932303864
+36316239363133613765613264623635346631353738663133366536333038343836306534633535
+3466646130333939350a373239636132333734316462383861376231343537336164323064663134
+35643832653137626335326430616164633965366331633863613361363131383236643534333636
+3663343336383063363262653732663532306536363539373432
+```
+> Создадим плейбук create_env.yml
+```
+user@lab:~/skurat$ cat playbooks/create_env.yml
+- name: Create .env file
+  hosts: all
+  become: true
+  vars_files:
+    - /home/user/skurat/vars/vault_vars.yml
+
+  tasks:
+    - name: Check /opt/app dir exists
+      file:
+        path: /opt/app
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+    - name: Generate .env file
+      copy:
+        dest: /opt/app/.env
+        content: |
+          APP_TOKEN={{ api_token }}
+          API_USER={{ api_user }}
+          ENVIRONMENT=production
+        owner: root
+        group: root
+        mode: '0600'
+```
+> Запустим плейбук на прокатку
+```
+user@lab:~/skurat$ ansible-playbook playbooks/create_env.yml --ask-vault-pass
+Vault password:
+
+PLAY [Create .env file] **********************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ***********************************************************************************************************************************************************************************
+Enter passphrase for key '/home/user/.ssh/id_rsa':
+[WARNING]: Platform linux on host ansibleclient is using the discovered Python interpreter at /usr/bin/python3.10, but future installation of another Python interpreter could change the meaning of that
+path. See https://docs.ansible.com/ansible-core/2.17/reference_appendices/interpreter_discovery.html for more information.
+ok: [ansibleclient]
+
+TASK [Check /opt/app dir exists] *************************************************************************************************************************************************************************
+changed: [ansibleclient]
+
+TASK [Generate .env file] ********************************************************************************************************************************************************************************
+changed: [ansibleclient]
+
+PLAY RECAP ***********************************************************************************************************************************************************************************************
+ansibleclient              : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+> Проверим на клиентской машине
+```
+user@ansibleclient:~/skurat$ sudo cat /opt/app/.env
+APP_TOKEN=s3cr3t_t0k3n
+API_USER=ecom
+ENVIRONMENT=production
+```
+> Вроде так
+
+## Task 4 Написать роль sys_utils_manager, которая устанавливает инструменты
+мониторинга: atop, iotop
+сетевые: nmap, tcpdump, mtr
+отладочные: strace
+Роль должна использовать теги
+
+monitoring - для установки утилит мониторинга
+network - для установки сетевых утилит
+debug - для установки отладочных утилит
+config_atop - для настройки утилиты atop -> изменение времени сбора метрик с 10 минут на значение, указанное в переменной atop_time
+
