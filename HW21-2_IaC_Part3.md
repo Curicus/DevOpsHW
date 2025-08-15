@@ -304,4 +304,59 @@ user@ansibleclient:~$ sudo systemctl status iotop
 ```
 > Проведем раскатку по тегу изменеи интервала сбора метрик
 ```
+user@lab:~/skurat$ ansible-playbook playbooks/install_utils.yml --tags config_atop -e atop_time=1200
 
+PLAY [install sys_utils] *********************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ***********************************************************************************************************************************************************************************
+Enter passphrase for key '/home/user/.ssh/id_rsa':
+[WARNING]: Platform linux on host ansibleclient is using the discovered Python interpreter at /usr/bin/python3.10, but future installation of another Python interpreter could change the meaning of that
+path. See https://docs.ansible.com/ansible-core/2.17/reference_appendices/interpreter_discovery.html for more information.
+ok: [ansibleclient]
+
+TASK [/home/user/skurat/roles/sys_utils_manager : Configure atop metrics interval] ***********************************************************************************************************************
+changed: [ansibleclient]
+
+RUNNING HANDLER [/home/user/skurat/roles/sys_utils_manager : Restart atop service] ***********************************************************************************************************************
+changed: [ansibleclient]
+
+PLAY RECAP ***********************************************************************************************************************************************************************************************
+ansibleclient              : ok=3    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+> Проверим изменилось ли на клиенте
+```
+user@ansibleclient:~$ cat /usr/share/atop/atop.daily
+...
+echo $$ > $PIDFILE
+exec $BINPATH/atop $LOGOPTS -w "$LOGPATH"/atop_"$CURDAY" "$LOGINTERVAL" > "$LOGPATH/daily.log" 2>&1
+INTERVAL=1200
+user@ansibleclient:~$
+```
+> Проведем прокатку сетевых утилит
+```
+user@lab:~/skurat$ ansible-playbook playbooks/install_utils.yml --tags network
+
+PLAY [install sys_utils] *********************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ***********************************************************************************************************************************************************************************
+Enter passphrase for key '/home/user/.ssh/id_rsa':
+[WARNING]: Platform linux on host ansibleclient is using the discovered Python interpreter at /usr/bin/python3.10, but future installation of another Python interpreter could change the meaning of that
+path. See https://docs.ansible.com/ansible-core/2.17/reference_appendices/interpreter_discovery.html for more information.
+ok: [ansibleclient]
+
+TASK [/home/user/skurat/roles/sys_utils_manager : Install network tools] *********************************************************************************************************************************
+changed: [ansibleclient]
+
+PLAY RECAP ***********************************************************************************************************************************************************************************************
+ansibleclient              : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+> Проверим на клиенте
+```
+user@ansibleclient:~$ whereis nmap
+nmap: /usr/bin/nmap /usr/share/nmap /usr/share/man/man1/nmap.1.gz
+user@ansibleclient:~$ whereis tcpdump
+tcpdump: /usr/bin/tcpdump /usr/share/man/man8/tcpdump.8.gz
+user@ansibleclient:~$ whereis mtr
+mtr: /usr/bin/mtr /usr/share/man/man8/mtr.8.gz
+```
+> Ну с дебагом тоже норм
