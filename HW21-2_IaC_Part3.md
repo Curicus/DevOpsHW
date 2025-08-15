@@ -196,4 +196,112 @@ monitoring - для установки утилит мониторинга
 network - для установки сетевых утилит
 debug - для установки отладочных утилит
 config_atop - для настройки утилиты atop -> изменение времени сбора метрик с 10 минут на значение, указанное в переменной atop_time
+```
+├── playbooks
+│   ├── create_env.yml
+│   ├── install_utils.yml
+│   ├── logrotate.yml
+│   └── site.yml
+├── roles
+│   ├── logrotate_config
+│   │   ├── defaults
+│   │   │   └── main.yml
+│   │   ├── handlers
+│   │   │   └── main.yml
+│   │   ├── tasks
+│   │   │   └── main.yml
+│   │   └── templates
+│   │       └── logrotate.conf.j2
+│   └── sys_utils_manager
+│       ├── defaults
+│       │   └── main.yml
+│       ├── handlers
+│       │   └── main.yml
+│       └── tasks
+│           └── main.yml
+
+```
+> Выведем содержимое структурных файлов
+
+```
+user@lab:~/skurat$ cat playbooks/install_utils.yml
+- name: install sys_utils
+  hosts: all
+  become: yes
+  roles:
+    - role: /home/user/skurat/role/sys_utils_manager
+
+user@lab:~/skurat$ cat roles/sys_utils_manager/defaults/main.yml
+top_time: 5
+
+user@lab:~/skurat$ cat roles/sys_utils_manager/handlers/main.yml
+- name: Restart atop service
+  service:
+    name: atop
+    state: restarted
+
+user@lab:~/skurat$ cat roles/sys_utils_manager/tasks/main.yml
+- name: Install monitoring tools
+  package:
+    name:
+      - atop
+      - iotop
+    state: present
+  tags:
+    - monitoring
+
+- name: Install network tools
+  package:
+    name:
+      - nmap
+      - tcpdump
+      - mtr
+    state: present
+  tags:
+    - network
+
+- name: Install debug tools
+  package:
+    name:
+      - strace
+    state: present
+  tags:
+    - debug
+
+- name: Configure atop metrics interval
+  lineinfile:
+    path: /usr/share/atop/atop.daily
+    regexp: '^INTERVAL='
+    line: "INTERVAL={{ atop_time }}"
+    backup: yes
+  notify: Restart atop service
+  tags:
+    - config_atop
+```
+> Проведем раскатку по тегу установка только утилит мониторинга
+```
+user@lab:~/skurat$ ansible-playbook playbooks/install_utils.yml --tags monitoring
+
+PLAY [install sys_utils] *********************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] ***********************************************************************************************************************************************************************************
+Enter passphrase for key '/home/user/.ssh/id_rsa':
+[WARNING]: Platform linux on host ansibleclient is using the discovered Python interpreter at /usr/bin/python3.10, but future installation of another Python interpreter could change the meaning of that
+path. See https://docs.ansible.com/ansible-core/2.17/reference_appendices/interpreter_discovery.html for more information.
+ok: [ansibleclient]
+
+TASK [/home/user/skurat/roles/sys_utils_manager : Install monitoring tools] ******************************************************************************************************************************
+changed: [ansibleclient]
+
+PLAY RECAP ***********************************************************************************************************************************************************************************************
+ansibleclient              : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+user@ansibleclient:~$ whereis atop
+atop: /usr/bin/atop /usr/share/atop /usr/share/man/man1/atop.1.gz
+user@ansibleclient:~$ whereis iotop
+iotop: /usr/sbin/iotop /usr/share/man/man8/iotop.8.gz
+user@ansibleclient:~$ sudo systemctl status iotop
+```
+> Проведем раскатку по тегу изменеи интервала сбора метрик
+```
 
