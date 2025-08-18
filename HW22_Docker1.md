@@ -51,8 +51,9 @@ CONTAINER ID   IMAGE             COMMAND     CREATED          STATUS          PO
 a8c26a79e62b   grafana/grafana   "/run.sh"   28 seconds ago   Up 28 seconds   0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp   grafana
 ```
 <img width="1601" height="983" alt="image" src="https://github.com/user-attachments/assets/cdfed80b-6721-4e12-b559-c1b42111f72d" />
-```
+
 > Остановим и удалим данный контейнер
+```
 user@lab:~$ docker stop grafana
 grafana
 user@lab:~$ docker rm grafana
@@ -103,7 +104,7 @@ nginx             latest    ad5708199ec7   4 days ago    192MB
 ```
 вот только размер слоев тут не увидеть.
 
-Информацию о слоях образа можно узнать с помощью команды docker history, например возмем образ grafana:
+Информацию о слоях образа можно узнать с помощью команды docker history, например возмем образ grafana (формат вывода подсмотрел):
 ```
 user@lab:~$ docker history --format "{{.CreatedBy}}: {{.Size}}" grafana/grafana | sort -h
 ADD alpine-minirootfs-3.22.1-x86_64.tar.gz /…: 8.31MB
