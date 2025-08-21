@@ -49,7 +49,7 @@ APP_ENV=production
 DEBUG=false
 API_VERSION=v1
 ```
-> Запустим контейнер подсунув файл с переменными в .env, меняя их можно влиять на поведение 
+> Запустим контейнер подсунув файл с переменными в .env, меняя их можно влиять на поведение программы, без пересбора образа
 ```
 user@lab:~/docker-apps/python-app$ docker run --env-file .env -d -p 5000:5000 --name python python-app
 05f0dca13fc0acdb1784f8ce71ace9cc94de39087cf71b9d3f1929a7ec9b2a48
@@ -58,7 +58,12 @@ CONTAINER ID   IMAGE        COMMAND                  CREATED         STATUS     
 05f0dca13fc0   python-app   "gunicorn app:app --…"   7 seconds ago   Up 6 seconds   0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp   python
 ```
 
-
+> Проведем проверку
+```
+user@lab:~/docker-apps/python-app$ curl http://localhost:5000/config
+{"api_version":"v1","debug":false,"environment":"production"}
+```
+> Как видим "environment":"production", production подтянуло из .env, хотя изначально в app.py было development
 
 
 
