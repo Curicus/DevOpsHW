@@ -199,7 +199,119 @@ user@lab:~/skurat/docker/docker-apps/compose-apps/prj_nodejs-app_01$ curl http:/
 2) MySQL (mariadb)
 3) Nginx в роли reverse proxy
 
+> Дерево проекта
+```
+user@lab:~/skurat/docker/docker-apps/compose-apps/prj_nodejs-app_02$ tree -a
+.
+├── compose.yml
+├── nginx.conf
+└── nodejs-app_02
+    ├── app.js
+    ├── cmdb-data.json
+    ├── Dockerfile
+    ├── .env
+    ├── package.json
+    └── README.md
+```
+> Выведем compose.yml
+```
+user@lab:~/skurat/docker/docker-apps/compose-apps/prj_nodejs-app_02$ cat compose.yml
+services:
+  webserver:
+    image: nginx:1.24
+    container_name: reverse_proxy
+    ports:
+      - 8080:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    restart: always
+    depends_on:
+      app:
+        condition: service_started
+
+  app:
+    build:
+      context: ./nodejs-app_02
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./nodejs-app_02/.env
+    depends_on:
+      database:
+        condition: service_healthy
 
 
+  database:
+    container_name: mariadb
+    image: mariadb:10.9
+    restart: always
+    env_file:
+      - ./nodejs-app_02/.env
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "mysqluser", "-pmypassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+volumes:
+  db_data:
+```
 
+> nginx.conf тупо скопирован с прошлого задания
+> Dockerfile
+```
+user@lab:~/skurat/docker/docker-apps/compose-apps/prj_nodejs-app_02$ cat nodejs-app_02/Dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY . .
+RUN npm install
+ENTRYPOINT ["node", "app.js"]
+```
+> Выведем содержимое .env
+```
+user@lab:~/skurat/docker/docker-apps/compose-apps/prj_nodejs-app_02$ cat nodejs-app_02/.env
+      DB_HOST=database
+      DB_USER=mysqluser
+      DB_PASSWORD=mypassword
+      DB_NAME=nodejsbd
+
+      MARIADB_ROOT_PASSWORD=rootpassword
+      MARIADB_DATABASE=nodejsbd
+      MARIADB_USER=mysqluser
+      MARIADB_PASSWORD=mypassword
+```
+> Выполним сборку
+```
+docker compose up -d --build
+[+] Running 6/6
+ ✔ prj_nodejs-app_02-app               Built                                                                                                                                                           0.0s
+ ✔ Network prj_nodejs-app_02_default   Created                                                                                                                                                         0.0s
+ ✔ Volume "prj_nodejs-app_02_db_data"  Created                                                                                                                                                         0.0s
+ ✔ Container mariadb                   Healthy                                                                                                                                                        10.7s
+ ✔ Container prj_nodejs-app_02-app-1   Started                                                                                                                                                        10.8s
+ ✔ Container reverse_proxy             Started
+```
+> При проверке выяснили что тело файла cmdb-data.json, которое передается в POST запросе не соответствует
+```
+app.post('/api/servers', async (req, res) => {
+  const { hostname, ip_address, role } = req.body;
+```
+> тут должно передаваться только 3 поля поэтому файл cmdb-data.json будет выглядеть так
+```
+user@lab:~/skurat/docker/docker-apps/compose-apps/prj_nodejs-app_02$ cat nodejs-app_02/cmdb-data.json
+{
+    "role": "Web Server 01",
+    "hostname": "HP ProLiant DL380",
+    "ip_address": "192.168.1.10"
+  }
+```
+> теперь сделаем POST запрос и следом за ним GET
+```
+user@lab:~/skurat/docker/docker-apps/compose-apps/prj_nodejs-app_02$ curl -X POST -H "Content-Type: application/json" -d @nodejs-app_02/cmdb-data.json  http://localhost:8080/api/servers
+{"id":1}
+user@lab:~/skurat/docker/docker-apps/compose-apps/prj_nodejs-app_02$ curl -X GET http://localhost:8080/api/servers
+[{"id":1,"hostname":"HP ProLiant DL380","ip_address":"192.168.1.10","role":"Web Server 01","created_at":"2025-08-27T10:31:11.000Z"}]
+```
+> Как видим данные в базу заносятся
