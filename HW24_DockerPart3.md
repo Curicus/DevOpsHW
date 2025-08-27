@@ -193,7 +193,7 @@ user@lab:~/skurat/docker/docker-apps/compose-apps/prj_nodejs-app_01$ curl http:/
 {"message":"Данные успешно записаны и прочитаны из Memcached!","cached":{"timestamp":1756206911073},"status":"success"}
 ```
 
-## Task 3 Запустить приложение через docker compose, которое gозволяет добавлять и просматривать информацию о серверах в базе данных MySQL.
+## Task 3 Запустить приложение через docker compose, которое gозволяет добавлять и просматривать информацию о серверах в базе данных MARIADB.
 ## Требования
 1) Node.js не ниже 14
 2) MySQL (mariadb)
