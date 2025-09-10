@@ -39,5 +39,33 @@ print(text)
 ```
 
 ## Task 3 Создайте пустую директорию mydir в текущей рабочей директории. Затем перейдите в эту директорию и создайте в ней три пустых файла: file1.txt, file2.txt и file3.txt. Наконец, выведите список файлов в директории на экран.
+> Выведем код
+```
+(venv) user@lab:~/skurat/python/lesson27$ cat less27proj3.py
+import os
+
+os.mkdir("mydir")
+os.chdir("mydir")
+
+open("file1.txt", "w").close()
+open("file2.txt", "w").close()
+open("file3.txt", "w").close()
+
+files = os.listdir()
+print("Содержимое директории mydir:", files)
+```
+> Проверим
+```
+(venv) user@lab:~/skurat/python/lesson27$ python3 less27proj3.py
+Содержимое директории mydir: ['file3.txt', 'file1.txt', 'file2.txt']
+```
+
+## Task 4 
+Создайте шаблон template.html, который будет содержать HTML-код 
+для отображения списка пользователей. Шаблон должен использовать
+цикл for для перебора элементов списка, и выводить имя и email
+каждого пользователя. Затем создайте список пользователей в виде
+списка словарей, передайте его в шаблон и отобразите результат на
+экране. 
 
 
