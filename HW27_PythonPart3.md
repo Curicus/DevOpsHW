@@ -61,11 +61,79 @@ print("Содержимое директории mydir:", files)
 ```
 
 ## Task 4 
-Создайте шаблон template.html, который будет содержать HTML-код 
+**Создайте шаблон template.html, который будет содержать HTML-код 
 для отображения списка пользователей. Шаблон должен использовать
 цикл for для перебора элементов списка, и выводить имя и email
 каждого пользователя. Затем создайте список пользователей в виде
 списка словарей, передайте его в шаблон и отобразите результат на
-экране. 
+экране.** 
 
+> Выведем код исполняемого файла less27proj4.py
+```
+(env) user@lab:~/skurat/python/lesson27$ cat less27proj4.py
+from jinja2 import Environment, FileSystemLoader
+import os
+
+users = [
+    {"name": "Vasia", "email": "vasia@tech.me"},
+    {"name": "Petia", "email": "petia@tech.me"},
+    {"name": "Marfa", "email": "marfa@tech.me"}
+]
+
+template_dir = os.path.join(os.path.dirname(__file__), "templates")
+
+env = Environment(loader=FileSystemLoader(template_dir))
+template = env.get_template("template.html")
+
+rendered_html = template.render(users=users)
+
+output_file = os.path.join(os.path.dirname(__file__), "result.html")
+with open(output_file, "w", encoding="utf-8") as f:
+    f.write(rendered_html)
+
+print(f"HTML файл с пользователями создан: {output_file}")
+```
+> Выведем код html файла
+```
+(env) user@lab:~/skurat/python/lesson27$ cat templates/template.html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список пользователей</title>
+</head>
+<body>
+    <h1>Пользователи</h1>
+    <ul>
+        {% for user in users %}
+            <li>{{ user.name }} — {{ user.email }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+```
+> Проверим выполнение
+```
+(env) user@lab:~/skurat/python/lesson27$ python3 less27proj4.py
+HTML файл с пользователями создан: /home/user/skurat/python/lesson27/result.html
+(env) user@lab:~/skurat/python/lesson27$ cat result.html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Список пользователей</title>
+</head>
+<body>
+    <h1>Пользователи</h1>
+    <ul>
+
+            <li>Vasia — vasia@tech.me</li>
+
+            <li>Petia — petia@tech.me</li>
+
+            <li>Marfa — marfa@tech.me</li>
+
+    </ul>
+</body>
+```
 
