@@ -34,6 +34,7 @@ Console. Научится создавать и настраивать вирт�
 
 > Создали bucket в основном с дефолтными настройками
 <img width="1260" height="453" alt="image" src="https://github.com/user-attachments/assets/94a17786-72b8-4d3e-867b-4b471d1111af" />
+
 > Записали файл, ну и доступ дали только owner`у
 <img width="1323" height="641" alt="image" src="https://github.com/user-attachments/assets/2eca9c34-edee-451c-98de-827b9e841253" />
 
