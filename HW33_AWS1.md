@@ -19,6 +19,7 @@ Console. Научится создавать и настраивать вирт�
 > Создали и запустили Instance
 <img width="795" height="358" alt="image" src="https://github.com/user-attachments/assets/3116c125-f83f-46ca-b5c4-8f92ce5923db" />
 <img width="1625" height="189" alt="image" src="https://github.com/user-attachments/assets/382b7304-6298-4acd-8e6b-0ab9b12e926b" />
+
 Зайдем по ssh используя пару ключей
 <img width="1014" height="648" alt="image" src="https://github.com/user-attachments/assets/08822ad5-d8fd-4e26-9578-a016ab0c38df" />
 
@@ -33,8 +34,34 @@ Console. Научится создавать и настраивать вирт�
 машины, которую вы создали ранее.
 
 > Создали bucket в основном с дефолтными настройками
+
 <img width="1260" height="453" alt="image" src="https://github.com/user-attachments/assets/94a17786-72b8-4d3e-867b-4b471d1111af" />
 
 > Записали файл, ну и доступ дали только owner`у
+
 <img width="1323" height="641" alt="image" src="https://github.com/user-attachments/assets/2eca9c34-edee-451c-98de-827b9e841253" />
+
+> Сделаем подключение к дефолтной базе
+```
+ubuntu@ip-172-31-18-51:~$ psql -h postgres-db.c6ji624sinjx.us-east-1.rds.amazonaws.com -p 5432 -U postgres -d postgres
+Password for user postgres:
+psql (16.10 (Ubuntu 16.10-0ubuntu0.24.04.1), server 16.4)
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
+Type "help" for help.
+
+postgres=>
+```
+
+## Task 4 Настройте масштабирование Amazon EC2, чтобы автоматически добавлять новые экземпляры в случае увеличения нагрузки.
+
+> Сначала добавили в роли EC2 политики AmazonSSMManagedInstanceCore и CloudWatchAgentServerPolicy
+
+> Далее создали Launch Template
+> Далее создали Auto Scaling Group
+
+<img width="1898" height="414" alt="image" src="https://github.com/user-attachments/assets/f9e40db7-5930-451b-96e7-eb980ac44dba" />
+
+> Создали Alarm и привязали его к ранее созданному ASG и сделали чтобы он триггерил запуск инстанса из созданного шаблона
+<img width="1129" height="467" alt="image" src="https://github.com/user-attachments/assets/972c2efe-609c-4bc8-8ccf-2e869e951ad7" />
+ 
 
