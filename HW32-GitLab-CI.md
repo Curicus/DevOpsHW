@@ -33,6 +33,7 @@ notify - уведомление о начале pipleine и о его завер
 4. Подготовим переменное окружение в GitLab 
 <img width="1337" height="519" alt="image" src="https://github.com/user-attachments/assets/f672871b-c012-4cbd-8dbf-26bab5e3f6ef" />
 5. Выведем текст самого конфигурационного файла CI/CD .gitlab-ci.yml (не получилось сделать test и smoke в одном stage :(   )
+
    ```
    ---
 # Этапы пайплайна
@@ -183,7 +184,7 @@ notify-end:
   allow_failure: true
   tags:
     - shell 
-   ```
+```
 > Как мы видим джоб notify-start входит в stage notify, который идет самым последним, но за счет needs: [] запускаем его самым первым.
 На этапе build собираем образ и закидываем его в gitlab-registry
 <img width="1180" height="266" alt="image" src="https://github.com/user-attachments/assets/67adf50d-fad5-4d5d-bef7-5e904eede93f" />
