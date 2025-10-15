@@ -28,7 +28,7 @@ Gitlab CI practice
 
 опционально в уведомлении об окончании пайплайна можно добавить файл с результатами тестов 
 
-Ссылка на CI проект `https://gitlab.com/skurat.aleksey/hw_lesson32`
+Ссылка на CI проект https://gitlab.com/skurat.aleksey/hw_lesson32
 
 1. Склонируем проект на локальную машину и настроим там git для пуша в gitlab CI.
    <img width="1399" height="588" alt="image" src="https://github.com/user-attachments/assets/433c0899-23a7-41cc-952f-e482cc70eb51" />
