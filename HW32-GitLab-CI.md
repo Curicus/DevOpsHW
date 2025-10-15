@@ -5,24 +5,28 @@ pipeline CI/CD и интеграции с редактором кода VSC, а 
 ## TASK 
 Gitlab CI practice
 **Написать gitlab-ci pipeline для приложения** https://github.com/AnastasiyaGapochkina01/dos-29-cicd_04
-Требования:
-Pipeliene должен состоять из этапов
-code-quality - запуск линтеров
-tests - запуск тестов
-build - сборка и пуш docker image
-deploy - запуск контейнера на удаленной машине
-notify - уведомление о начале pipleine и о его завершении (в любой мессенджер)
 
-Этап code-quality должен включать в себя запуск линтеров как для кода приложения так и для файлов docker
-Этап tests должен состоять из двух jobs:
-первая должна прогонять unit тесты, запускаться всегда и сохранять в артефактах файл с результатами
-вторая должна запускаться после удачного деплоя и проверять что приложение доступно
-Этап build должен собирать и пушить docker image для приложения (registry можно использовать любой, хоть container registry от самого gitlab, хоть docker hub, хоть свой собственный)
-Этап deploy должен запускать новую версию приложения на удаленной машине (стратегию продумайте самостоятельно);
-Этап notify должен запускаться дважды:
+**Требования:** 
+- Pipeliene должен состоять из этапов 
+- code-quality - запуск линтеров 
+- tests - запуск тестов 
+- build - сборка и пуш docker image 
+- deploy - запуск контейнера на удаленной машине 
+- notify - уведомление о начале pipleine и о его завершении (в любой мессенджер) 
+
+Этап code-quality должен включать в себя запуск линтеров как для кода приложения так и для файлов docker 
+Этап tests должен состоять из двух jobs: 
+- первая должна прогонять unit тесты, запускаться всегда и сохранять в артефактах файл с результатами 
+- вторая должна запускаться после удачного деплоя и проверять что приложение доступно 
+- Этап build должен собирать и пушить docker image для приложения (registry можно использовать любой, хоть container registry от самого gitlab, хоть docker hub, хоть свой собственный) 
+- Этап deploy должен запускать новую версию приложения на удаленной машине (стратегию продумайте самостоятельно); 
+- Этап notify должен запускаться дважды:
+
 при старте пайплайна
+
 по окончанию пайплайна (включая статус завершения)
-опционально в уведомлении об окончании пайплайна можно добавить файл с результатами тестов
+
+опционально в уведомлении об окончании пайплайна можно добавить файл с результатами тестов 
 
 1. Склонируем проект на локальную машину и настроим там git для пуша в gitlab CI.
    <img width="1399" height="588" alt="image" src="https://github.com/user-attachments/assets/433c0899-23a7-41cc-952f-e482cc70eb51" />
@@ -30,11 +34,12 @@ notify - уведомление о начале pipleine и о его завер
 <img width="1610" height="434" alt="image" src="https://github.com/user-attachments/assets/497c4652-e893-46df-bb57-29003a9e815b" />
 <img width="1134" height="366" alt="image" src="https://github.com/user-attachments/assets/a7691908-1cbf-4ff4-b994-444c5e50f376" />
 3. Подготовим бота в telegram через BotFather c именем NotifyBot для уведомлений о старте пайплайна и о его завершении. Token и chat-id разместим в переменные окружения.
+   
 4. Подготовим переменное окружение в GitLab 
 <img width="1337" height="519" alt="image" src="https://github.com/user-attachments/assets/f672871b-c012-4cbd-8dbf-26bab5e3f6ef" />
 5. Выведем текст самого конфигурационного файла CI/CD .gitlab-ci.yml (не получилось сделать test и smoke в одном stage :(   )
 
-   ```
+```
    ---
 # Этапы пайплайна
 stages:
@@ -183,13 +188,33 @@ notify-end:
       fi
   allow_failure: true
   tags:
-    - shell 
+    - shell
+
 ```
 > Как мы видим джоб notify-start входит в stage notify, который идет самым последним, но за счет needs: [] запускаем его самым первым.
-На этапе build собираем образ и закидываем его в gitlab-registry
+> На этапе build собираем образ и закидываем его в gitlab-registry
 <img width="1180" height="266" alt="image" src="https://github.com/user-attachments/assets/67adf50d-fad5-4d5d-bef7-5e904eede93f" />
-На этапе теста мы вновь подгружаем наш собранный образ и проводим тестирование а результат теста ложим в виде json файла в артефакты.
+> На этапе теста мы вновь подгружаем наш собранный образ и проводим тестирование а результат теста ложим в виде json файла в артефакты.
 После этого проводим деплой на виртуальынй сервер в ya облаке и проверям его доступность с помощью smoke получаем
 <img width="791" height="181" alt="image" src="https://github.com/user-attachments/assets/bd7f632b-abdd-4302-8481-5d71bf58870e" />
+> Наблюдаем удачное завершение всех джобов
+<img width="1673" height="359" alt="image" src="https://github.com/user-attachments/assets/bd971f18-7579-42e1-b18b-ec0cbe63f04f" />
+> В самом конце в Telegram приходит уведомление о завершении, в нашем случае удачно, и пересылает файл с результати тестов из артефактов.
+<img width="550" height="282" alt="image" src="https://github.com/user-attachments/assets/0027d7ef-5603-4f0e-bb04-b91ce3a3dd54" />
+
+> Результат работы деплоя можем наблюдать открыв url http://158.160.172.160:3000 (адрес динамический, при выключении виртуалки изменится)
+<img width="1281" height="513" alt="image" src="https://github.com/user-attachments/assets/015112d1-49e5-4525-9f05-9f2fcc4f6341" />
+> Добавим в наше приложение заметку curl -X POST http://localhost:3000/add -d "text=Пример заметки" -H "Content-Type: application/x-www-form-urlencoded"
+curl -X POST http://158.160.172.160:3000/add -d "text=Заметка для проверки работоспособности" -H "Content-Type: application/x-www-form-urlencoded"
+<img width="802" height="350" alt="image" src="https://github.com/user-attachments/assets/944c4a1b-faa6-4230-837c-d30e9265aa65" />
+
+> Получим JSON с нашими заметками
+
+```
+user@ansible:~$ curl http://158.160.172.160:3000/api/notes
+{"notes":[{"id":1,"text":"Пример заметки","date":"15.10.2025, 05:14:26"},{"id":2,"text":"Заметка для проверки работоспособности","date":"15.10.2025, 05:22:59"}]}
+```
+
+
 
 
